@@ -14,6 +14,8 @@ namespace CardGameVR.Multiplayer
 
         [SerializeField] private MultiplayerConfig config;
         public TryToConnectEvent OnTryToConnect = new();
+
+        public ClientDisconnectedEvent OnClientDisconnected = new();
         public DisconnectEvent OnDisconnect = new();
 
         public int minPlayerCount => config.GetMinPlayerCount();
@@ -44,7 +46,7 @@ namespace CardGameVR.Multiplayer
             NetworkManager.Singleton.OnConnectionEvent += (clientId, connectionState) => Debug.Log("ConnectionEvent");
             NetworkManager.Singleton.OnSessionOwnerPromoted += clientId => Debug.Log("SessionOwnerPromoted");
             NetworkManager.Singleton.OnTransportFailure += () => Debug.Log("TransportFailure");
-            
+
             NetworkManager.Singleton.ConnectionApprovalCallback += NetworkManager_ConnectionApprovalCallback;
             NetworkManager.Singleton.OnClientConnectedCallback += NetworkManager_Server_OnClientConnectedCallback;
             NetworkManager.Singleton.OnClientDisconnectCallback += NetworkManager_Server_OnClientDisconnectCallback;

@@ -30,6 +30,7 @@ namespace CardGameVR.UI
         public void Join()
         {
             Debug.Log("Joining lobby " + Lobby.Id);
+            menu.JoinLobby(Lobby);
         }
     }
 }

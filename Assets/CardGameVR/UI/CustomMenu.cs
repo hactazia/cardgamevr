@@ -6,6 +6,7 @@ using CardGameVR.Languages;
 using CardGameVR.Lobbies;
 using CardGameVR.Multiplayer;
 using Cysharp.Threading.Tasks;
+using Unity.Services.Lobbies.Models;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -14,7 +15,7 @@ namespace CardGameVR.UI
     public class CustomMenu : MonoBehaviour, ISubMenu
     {
         public Menu menu;
-        
+
         [Header("Pages")] public GameObject create;
         public GameObject join;
 
@@ -135,6 +136,15 @@ namespace CardGameVR.UI
             var isPrivate = TogglePrivate.isOn;
             menu.OnClick("create");
             var lobby = await LobbyManager.instance.CreateLobby(label, isPrivate);
+        }
+
+        public void JoinLobby(Lobby lobby) => JoinLobbyAsync(lobby).Forget();
+
+        private async UniTask JoinLobbyAsync(Lobby lobby)
+        {
+            menu.OnClick("join");
+            var o = await LobbyManager.instance.JoinLobby(lobby);
+            Debug.Log($"Joined lobby {o}");
         }
     }
 }

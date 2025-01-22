@@ -17,6 +17,7 @@ namespace CardGameVR.Lobbies
         Preparing,
         RelayAllocation,
         RelayJoinCode,
-        LobbyCreation
+        LobbyCreation,
+        StartHost
     }
 }

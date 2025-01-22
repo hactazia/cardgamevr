@@ -25,6 +25,7 @@ namespace CardGameVR.UI
         public string textRelayAllocation = "main_menu.creating.relay_allocation";
         public string textRelayJoinCode = "main_menu.creating.relay_join_code";
         public string textLobbyCreation = "main_menu.creating.lobby_creation";
+        public string textStartHost = "main_menu.creating.start_host";
 
         private void OnCreatingLobby(CreatingLobbyArgs args)
         {
@@ -41,6 +42,9 @@ namespace CardGameVR.UI
                     break;
                 case CreatingLobbyStatus.LobbyCreation:
                     textMessage.UpdateText(textLobbyCreation);
+                    break;
+                case CreatingLobbyStatus.StartHost:
+                    textMessage.UpdateText(textStartHost);
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();

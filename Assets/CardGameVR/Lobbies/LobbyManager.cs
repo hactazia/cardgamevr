@@ -44,6 +44,7 @@ namespace CardGameVR.Lobbies
         public static readonly LobbyExceptionEvent OnJoinLobbyByIdFailed = new();
         public static readonly RefreshLobbiesEvent OnRefreshLobbies = new();
         public static readonly CreatingLobbyEvent OnCreatingLobby = new();
+        public static readonly JoiningLobbyEvent OnJoiningLobby = new();
 
         private void Awake()
         {
@@ -170,9 +171,11 @@ namespace CardGameVR.Lobbies
         {
             try
             {
-                OnCreatingLobby.Invoke(new CreatingLobbyArgs { Manager = this, Status = CreatingLobbyStatus.RelayAllocation });
+                OnCreatingLobby.Invoke(new CreatingLobbyArgs
+                    { Manager = this, Status = CreatingLobbyStatus.RelayAllocation });
                 var allocation = await AllocateRelay();
-                OnCreatingLobby.Invoke(new CreatingLobbyArgs { Manager = this, Status = CreatingLobbyStatus.RelayJoinCode });
+                OnCreatingLobby.Invoke(new CreatingLobbyArgs
+                    { Manager = this, Status = CreatingLobbyStatus.RelayJoinCode });
                 var relayJoinCode = await GetRelayJoinCode(allocation);
                 var protocolVersion = NetworkManager.Singleton.NetworkConfig.ProtocolVersion;
                 var maxPlayers = MultiplayerManager.instance.maxPlayerCount;
@@ -195,11 +198,14 @@ namespace CardGameVR.Lobbies
                         }
                     }
                 };
-                OnCreatingLobby.Invoke(new CreatingLobbyArgs { Manager = this, Status = CreatingLobbyStatus.LobbyCreation });
+                OnCreatingLobby.Invoke(new CreatingLobbyArgs
+                    { Manager = this, Status = CreatingLobbyStatus.LobbyCreation });
                 _currentLobby = await LobbyService.Instance.CreateLobbyAsync(lobbyName, maxPlayers, options);
                 NetworkManager.Singleton.GetComponent<UnityTransport>()
                     .SetRelayServerData(allocation.ToRelayServerData("wss"));
                 _lastHeartbeat = DateTime.Now;
+                OnCreatingLobby.Invoke(new CreatingLobbyArgs
+                    { Manager = this, Status = CreatingLobbyStatus.StartHost });
                 MultiplayerManager.instance.StartHost();
                 return _currentLobby;
             }
@@ -247,10 +253,11 @@ namespace CardGameVR.Lobbies
             => LobbyExists(lobby)
                && GetHostProtocolVersion(lobby) == NetworkManager.Singleton.NetworkConfig.ProtocolVersion.ToString();
 
-        private async UniTask<JoinAllocation> JoinLobby()
+        public async UniTask<JoinAllocation> JoinLobby(Lobby lobby)
         {
             try
             {
+                _currentLobby = lobby;
                 if (!IsNetworkCompatible(_currentLobby))
                 {
                     OnRefusedToJoinLobby.Invoke(new LobbyExceptionArgs
@@ -263,9 +270,13 @@ namespace CardGameVR.Lobbies
                 }
 
                 var relayJoinCode = _currentLobby.Data[KeyRelayJoinCode].Value;
+                OnJoiningLobby.Invoke(new JoiningLobbyArgs
+                    { Manager = this, Status = JoiningLobbyStatus.JoinAllocation });
                 var joinAllocation = await RelayService.Instance.JoinAllocationAsync(relayJoinCode);
                 NetworkManager.Singleton.GetComponent<UnityTransport>()
                     .SetRelayServerData(joinAllocation.ToRelayServerData("wss"));
+                OnJoiningLobby.Invoke(new JoiningLobbyArgs
+                    { Manager = this, Status = JoiningLobbyStatus.StartClient });
                 MultiplayerManager.instance.StartClient();
                 return joinAllocation;
             }
